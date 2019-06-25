@@ -10,6 +10,16 @@
  - An alternative way to calculate the pixel wise accuracy would be including only the foreground pixels, any misclassification would be penalized and would add up in the final score. This would serve as a more robust method when the scales of object instances are small compared to the entire image.
  
  
+ ## Visualization
+
+  <a href="annotated_image.png" target="_blank"><img 
+src="annotated_image.png" alt="annotation" width="425" height="215" 
+border="10" /></a>
+<a href="output_color_mask.png" target="_blank"><img 
+src="output_color_mask.png" alt="output" width="425" height="215" 
+border="10" /></a>
+ - right : annotated image (ground truth)
+ - left : output from maskrcnn
  ```
  pixel wise accuracy for foreground
 {
