@@ -119,13 +119,9 @@ non_instance_classes = ['mountain', 'static', 'ego_vehicle', 'rectification_bord
 #    - Use the channel with the maximum number of foreground prediction, this can be done by summing the prediction array along the first axis and then picking the index with maximum sum.
 #    - Keep track of the channels that are previously used.
 #    - The required prediction mask for the current object instance can then be got from the prediction array by using the channel got in the previous step.
-#    - Compute the pixel wise accuracy with the formula.
-#    <a href="https://www.codecogs.com/eqnedit.php?latex=\inline&space;accuracy=\frac{TP&plus;TN}{TP&plus;TN&plus;FP&plus;FN}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\inline&space;accuracy=\frac{TP&plus;TN}{TP&plus;TN&plus;FP&plus;FN}" title="accuracy=\frac{TP+TN}{TP+TN+FP+FN}" /></a>
-#     - TP represents foreground pixels that are correctly predicted
-#     - TN represents background pixels that are correctly predicted
-#     - FP represents background pixels that are wrongly predicted
-#     - FN represents foreground pixels that are wrongle predictes
-#   - The accuracy formula can be simplfied to (correctly classified pixels) / (total pixels). This can be computed using element wise comparision with the ground truth, and then taking the mean along first axis
+#   - In this variation we only keep the foreground pixels, the background pixels are discarded.
+#   - Foreground pixels for both the ground truth and the predicted mask can be easily accessed. To do this we apply a boolean_mask got from the ground truth
+#   - The accuracy formula can be simplfied to (correctly classified foreground pixels) / (total foreground pixels). This can be computed using element wise comparision with the ground truth, and then taking the mean along first axis
 #   - Get the predicted class name using the channel to index the class_ids list.
 #   - If the normalized class name and predicted class name do no match, set accuracy to zero.
 #   - If the current channel has already be used by a previous object
@@ -154,8 +150,10 @@ def calculate_pixel_accuracy(labelled_mask, label_class, prediction_array):
         return -1
     predicted_channel_id = np.argmax(p_sum, axis=0)
     predicted_mask = masks[..., predicted_channel_id]
+    predicted_mask_foreground = predicted_mask[labelled_mask]
+    labelled_mask_foreground = labelled_mask[labelled_mask]
     predicted_class = idx_class[class_ids[predicted_channel_id]]
-    correct_pixels = predicted_mask == labelled_mask
+    correct_pixels = predicted_mask_foreground == labelled_mask_foreground
     if (predicted_class == mapping(label_class)):
         if predicted_channel_id in seen_idx:
             if label_class not in instances_classes:
@@ -186,7 +184,7 @@ print(result_dict)
 # In[9]:
 
 
-with open('output.json', 'w') as f:
+with open('output_only_foreground.json', 'w') as f:
     json.dump(result_dict, f)
 
 
