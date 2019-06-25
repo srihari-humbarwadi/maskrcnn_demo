@@ -54,7 +54,7 @@ idx_class = {i:x for i, x in enumerate(class_names)}
 
 # ## Loading the sample input image and the corresponding labelled iamge
 
-# In[4]:
+# In[16]:
 
 
 IMAGE_PATH = 'input_image.png'
@@ -64,15 +64,17 @@ src_annotation = cv2.cvtColor(cv2.imread(ANNOTATION_PATH), cv2.COLOR_RGB2BGR)
 with open('legend.json') as f:
     legend = json.load(f)
 color_map = {tuple(int(hex_color.strip('#')[i:i+2], 16) for i in (0, 2, 4)):class_name for hex_color, class_name in legend['legend'].items()}    
-plt.figure()
+plt.figure(figsize=(10, 10))
+plt.axis('off')
 plt.imshow(src_img)
-plt.figure()
+plt.figure(figsize=(10, 10))
+plt.axis('off')
 plt.imshow(src_annotation)
 
 
 # ## Getting the predictions from the MaskRCNN model
 
-# In[5]:
+# In[6]:
 
 
 raw_predictions = model.detect(images=[src_img], verbose=1)
@@ -86,7 +88,7 @@ class_ids = raw_predictions[0]['class_ids']
 #  - Some classes may have multiple instances, and others might not
 #  - We maintain two separate lists to keep track of them
 
-# In[6]:
+# In[11]:
 
 
 def mapping(class_name):
@@ -105,7 +107,7 @@ def mapping(class_name):
     elif 'train' in class_name_lower:
         return 'train'    
     else:
-        return class_name
+        return -1
     
 instances_classes = ['Bus', 'Bus # 1', 'Car', 'Car # 1', 'Car # 10', 'Car # 11', 'Car # 12', 'Car # 13', 'Car # 14', 'Car # 15', 'Car # 16', 'Car # 17', 'Car # 18', 'Car # 19', 'Car # 2', 'Car # 20', 'Car # 21', 'Car # 22', 'Car # 23', 'Car # 24', 'Car # 3', 'Car # 4', 'Car # 5', 'Car # 6', 'Car # 7', 'Car # 8', 'Car # 9', 'Caravan', 'Caravan # 1', 'Truck', 'Truck # 1', 'Truck # 2']
 non_instance_classes = ['mountain', 'static', 'ego_vehicle', 'rectification_border', 'Motorcycle', 'building', 'sky', 'ground', 'cycle', 'Person', 'person_group', 'licenseplate', 'wall', 'vegetation', 'dynamic', 'road', 'bridge', 'tunnel', 'terrain', 'pole', 'billboard', 'guardrail', 'fence', 'tram track', 'car_group', 'street light', 'traffic_sign', 'Train', 'rail track', 'Trailer', 'sidewalk', 'cycle_group', 'traffic_light', 'parking', 'rider', 'unlabeled']    
@@ -131,7 +133,7 @@ non_instance_classes = ['mountain', 'static', 'ego_vehicle', 'rectification_bord
 #   - If the current channel has already be used by a previous object
 #    - Set the accuracy to 0 if the respective class in present in the multiple instance class list
 
-# In[7]:
+# In[15]:
 
 
 # def get_mask_at_roi(roi, raw_mask_array):
@@ -150,8 +152,8 @@ def calculate_pixel_accuracy(labelled_mask, label_class, prediction_array):
     accuracy = 0
     predicted_mask_array = prediction_array[labelled_mask]
     p_sum = np.sum(predicted_mask_array, axis=0)
-    if np.sum(p_sum) == 0:
-        return -1
+    if np.sum(p_sum) == 0 or mapping(label_class) == -1:
+        return -1, -1
     predicted_channel_id = np.argmax(p_sum, axis=0)
     predicted_mask = masks[..., predicted_channel_id]
     predicted_class = idx_class[class_ids[predicted_channel_id]]
@@ -162,20 +164,30 @@ def calculate_pixel_accuracy(labelled_mask, label_class, prediction_array):
                 accuracy = np.mean(correct_pixels)
         else:
             accuracy = np.mean(correct_pixels)
-    return accuracy
+    return accuracy, predicted_channel_id
 
 result_dict = {}
 seen_idx = {}
+channel_color = {}
 
 for color_code, class_name in color_map.items():
     labelled_mask = get_mask_for_color_code(color_code, src_annotation)
-    accuracy = calculate_pixel_accuracy(labelled_mask, class_name, masks)
+    accuracy, predicted_channel_id = calculate_pixel_accuracy(labelled_mask, class_name, masks)
     if accuracy == -1:
         continue
     result_dict[class_name] = accuracy
+    channel_color[predicted_channel_id] = color_code
+    
+predicted_mask_color = np.zeros_like(src_annotation, dtype=np.uint8) + 85
+for channel_idx in range(masks.shape[-1]):
+    if channel_idx in channel_color:
+        predicted_mask_color[masks[..., channel_idx]] = channel_color[channel_idx]
+plt.figure(figsize=(10, 10))
+plt.axis('off')
+plt.imshow(predicted_mask_color)
 
 
-# In[8]:
+# In[13]:
 
 
 print(result_dict)
@@ -183,15 +195,9 @@ print(result_dict)
 
 # ## Writing the output to a json file
 
-# In[9]:
+# In[14]:
 
 
 with open('output.json', 'w') as f:
     json.dump(result_dict, f)
-
-
-# In[ ]:
-
-
-
 
