@@ -6,8 +6,8 @@
  - pip install jupyterlab, and then run the required noteboooks
 
 ## Notes
- - Since majority of the instances can be of a small scale with respect to the full image, pixel wise accuracy that would take into account both the foreground and background will not give us usefull insights, it will simply measure how good the model is at detecting the majority class, here the majority class would be the background.
- - An alternative way to calculate the pixel wise accuracy would be including only the foreground pixels, any misclassification would be penalized and would add up in the final score. This would serve as a more robust method when the scales of object instances are small compared to the entier image.
+ - Since majority of the instances can be of a small scale with respect to the full image, pixel wise accuracy that would take into account both the foreground and background will not give us usefull insights, it would simply measure how good the model is at detecting the majority class, here the majority class would be the background.
+ - An alternative way to calculate the pixel wise accuracy would be including only the foreground pixels, any misclassification would be penalized and would add up in the final score. This would serve as a more robust method when the scales of object instances are small compared to the entire image.
  
  
  ```
