@@ -21,8 +21,8 @@ border="10" /></a>
 <a href="output_color_mask.png" target="_blank"><img 
 src="output_color_mask.png" alt="output" width="425" height="215" 
 border="10" /></a>
- - right : annotated image (ground truth)
- - left : output from maskrcnn
+ - left : annotated image (ground truth)
+ - right : output from maskrcnn
  ```
  pixel wise accuracy for foreground
 {
