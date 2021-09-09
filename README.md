@@ -1,4 +1,3 @@
-[![HitCount](http://hits.dwyl.io/{username}/https://githubcom/srihari-humbarwadi/maskrcnn_demo.svg)](http://hits.dwyl.io/{username}/https://githubcom/srihari-humbarwadi/maskrcnn_demo)
 
 ## Running the code
  - git clone https://github.com/matterport/Mask_RCNN.git
